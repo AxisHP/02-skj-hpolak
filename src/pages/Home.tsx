@@ -1,20 +1,25 @@
-import React from 'react';
+const Home = () => {
+  // Sample user data - replace with actual API call
+  const users = [
+    { id: 1, name: 'John Doe', email: 'john@example.com' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+  ];
 
-const Home: React.FC = () => {
   return (
-    <div className="container py-5">
-      <div className="row">
-        <div className="col-lg-8 mx-auto">
-          <h1 className="display-4 mb-4">Welcome Home</h1>
-          <p className="lead">
-            This is the home page of your application. You can add your content here.
-          </p>
-          <hr className="my-4" />
-          <p>
-            Navigate to the login page to see the login form in action.
-          </p>
-        </div>
-      </div>
+    <div className="text-center">
+      <h1 className="display-4">Users list</h1>
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>
+            <div className="card m-2">
+              <div className="card-body">
+                <h5 className="card-title">{user.name}</h5>
+                <p className="card-text">{user.email}</p>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
