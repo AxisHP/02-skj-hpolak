@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Login submitted');
@@ -42,7 +42,7 @@ const Login = () => {
             <button type="submit" className="btn btn-primary">
               Login
             </button>
-            <button type="button" onClick={() => setCurrentPage('/')} className="btn btn-secondary">
+            <button type="button" onClick={() => navigate('/')} className="btn btn-secondary">
               Cancel
             </button>
           </form>

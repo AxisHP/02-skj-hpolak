@@ -1,15 +1,9 @@
-import { useNavigation } from '../../contexts/NavigationContext';
+import { NavLink } from 'react-router-dom';
 
 const Header = () => {
-    const { setCurrentPage } = useNavigation();
-
     const handleLogout = (e: React.FormEvent) => {
         e.preventDefault();
         console.log('Logout clicked');
-    };
-
-    const navigate = (page: string) => {
-        setCurrentPage(page);
     };
 
     return (
@@ -17,7 +11,7 @@ const Header = () => {
             <header>
                 <nav className="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
                 <div className="container-fluid">
-                    <a className="navbar-brand" onClick={() => navigate('/')}>MyApp</a>
+                    <NavLink className="navbar-brand" to="/">MyApp</NavLink>
                     <button 
                     className="navbar-toggler" 
                     type="button" 
@@ -32,25 +26,25 @@ const Header = () => {
                     <div className="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul className="navbar-nav flex-grow-1">
                         <li className="nav-item">
-                        <a className="btn nav-link text-dark" onClick={() => navigate('/')}>Home</a>
+                        <NavLink className="nav-link text-dark" to="/">Home</NavLink>
                         </li>
                         <li className="nav-item">
-                        <a className="btn nav-link text-dark" onClick={() => navigate('/items')}>Items</a>
+                        <NavLink className="nav-link text-dark" to="/items">Items</NavLink>
                         </li>
                         <li className="nav-item">
-                        <a className="btn nav-link text-dark" onClick={() => navigate('/users')}>Users</a>
+                        <NavLink className="nav-link text-dark" to="/users">Users</NavLink>
                         </li>
                         <li className="nav-item">
-                        <a className="btn nav-link text-dark" onClick={() => navigate('/categories')}>Categories</a>
+                        <NavLink className="nav-link text-dark" to="/categories">Categories</NavLink>
                         </li>
                         <li className="nav-item">
-                        <a className="btn nav-link text-dark" onClick={() => navigate('/cart')}>Cart</a>
+                        <NavLink className="nav-link text-dark" to="/cart">Cart</NavLink>
                         </li>
                         <li className="nav-item">
-                        <a className="btn nav-link text-dark" onClick={() => navigate('/favourites')}>Favourites</a>
+                        <NavLink className="nav-link text-dark" to="/favourites">Favourites</NavLink>
                         </li>
                         <li className="nav-item">
-                        <a className="btn nav-link text-dark" onClick={() => navigate('/orders')}>Orders</a>
+                        <NavLink className="nav-link text-dark" to="/orders">Orders</NavLink>
                         </li>
                         <li className="nav-item">
                         <form onSubmit={handleLogout}>
@@ -58,10 +52,10 @@ const Header = () => {
                         </form>
                         </li>
                         <li className="nav-item">
-                        <a className="btn nav-link text-dark" onClick={() => navigate('/create-user')}>Register</a>
+                        <NavLink className="nav-link text-dark" to="/create-user">Register</NavLink>
                         </li>
                         <li className="nav-item">
-                        <a className="btn nav-link text-dark" onClick={() => navigate('/login')}>Login</a>
+                        <NavLink className="nav-link text-dark" to="/login">Login</NavLink>
                         </li>
                     </ul>
                     </div>

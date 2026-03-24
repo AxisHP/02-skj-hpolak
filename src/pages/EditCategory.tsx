@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const EditCategory = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   // Sample data - replace with actual API call
   const category = {
     publicId: '1',
@@ -46,7 +46,7 @@ const EditCategory = () => {
         <button type="submit" className="btn btn-primary">
           Save
         </button>
-        <button type="button" onClick={() => setCurrentPage('/categories')} className="btn btn-secondary">
+        <button type="button" onClick={() => navigate('/categories')} className="btn btn-secondary">
           Cancel
         </button>
       </form>

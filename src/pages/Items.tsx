@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const Items = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   // Sample data - replace with actual API calls
   const categories = [
     { publicId: '1', name: 'Electronics' },
@@ -54,7 +54,7 @@ const Items = () => {
 
       {isAdmin && (
         <p>
-          <button onClick={() => setCurrentPage('/items/create')} className="btn btn-primary">
+          <button onClick={() => navigate('/items/create')} className="btn btn-primary">
             Create New Item
           </button>
         </p>
@@ -79,7 +79,7 @@ const Items = () => {
               <td>{item.categoryName}</td>
               <td>
                 <button
-                  onClick={() => setCurrentPage(`/items/details/${item.publicId}`)}
+                  onClick={() => navigate(`/items/details/${item.publicId}`)}
                   className="btn btn-sm btn-info"
                 >
                   Details
@@ -87,13 +87,13 @@ const Items = () => {
                 {isAdmin && (
                   <>
                     <button
-                      onClick={() => setCurrentPage(`/items/edit/${item.publicId}`)}
+                      onClick={() => navigate(`/items/edit/${item.publicId}`)}
                       className="btn btn-sm btn-warning"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => setCurrentPage(`/items/delete/${item.publicId}`)}
+                      onClick={() => navigate(`/items/delete/${item.publicId}`)}
                       className="btn btn-sm btn-danger"
                     >
                       Delete

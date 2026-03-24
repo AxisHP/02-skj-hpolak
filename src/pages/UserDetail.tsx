@@ -1,7 +1,6 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { Link } from 'react-router-dom';
 
 const UserDetail = () => {
-  const { setCurrentPage } = useNavigation();
   // Sample data - replace with actual API call
   const user = {
     publicId: '1',
@@ -44,15 +43,15 @@ const UserDetail = () => {
           </div>
 
           <div className="mt-3">
-            <a
-              href={`/update-user/${user.publicId}`}
+            <Link
+              to={`/update-user/${user.publicId}`}
               className="btn btn-warning"
             >
               Edit
-            </a>
-            <a href="/users" className="btn btn-secondary">
+            </Link>
+            <Link to="/users" className="btn btn-secondary">
               Back to Users
-            </a>
+            </Link>
           </div>
         </div>
       </div>

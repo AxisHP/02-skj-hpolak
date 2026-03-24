@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const DeleteItem = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   // Sample data - replace with actual API call
   const item = {
     publicId: '1',
@@ -39,7 +39,7 @@ const DeleteItem = () => {
         <button type="submit" className="btn btn-danger">
           Delete
         </button>
-        <button type="button" onClick={() => setCurrentPage('/items')} className="btn btn-secondary">
+        <button type="button" onClick={() => navigate('/items')} className="btn btn-secondary">
           Cancel
         </button>
       </form>

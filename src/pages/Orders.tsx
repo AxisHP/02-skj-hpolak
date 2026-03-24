@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const Orders = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   // Sample data - replace with actual API call
   const orders = [
     {
@@ -50,7 +50,7 @@ const Orders = () => {
               <td>{order.status}</td>
               <td>
                 <button
-                  onClick={() => setCurrentPage(`/orders/details/${order.publicId}`)}
+                  onClick={() => navigate(`/orders/details/${order.publicId}`)}
                   className="btn btn-sm btn-info"
                 >
                   Details
@@ -58,7 +58,7 @@ const Orders = () => {
                 {isAdmin && (
                   <>
                     <button
-                      onClick={() => setCurrentPage(`/orders/update-status/${order.publicId}`)}
+                      onClick={() => navigate(`/orders/update-status/${order.publicId}`)}
                       className="btn btn-sm btn-warning"
                     >
                       Update Status

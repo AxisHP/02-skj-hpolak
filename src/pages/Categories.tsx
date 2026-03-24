@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const Categories = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   // Sample data - replace with actual API call
   const categories = [
     {
@@ -26,7 +26,7 @@ const Categories = () => {
       <h1>Categories</h1>
 
       <p>
-        <button onClick={() => setCurrentPage('/categories/create')} className="btn btn-primary">
+        <button onClick={() => navigate('/categories/create')} className="btn btn-primary">
           Create New Category
         </button>
       </p>
@@ -46,13 +46,13 @@ const Categories = () => {
               <td>{category.description}</td>
               <td>
                 <button
-                  onClick={() => setCurrentPage(`/categories/edit/${category.publicId}`)}
+                  onClick={() => navigate(`/categories/edit/${category.publicId}`)}
                   className="btn btn-sm btn-warning"
                 >
                   Edit
                 </button>
                 <button
-                  onClick={() => setCurrentPage(`/categories/delete/${category.publicId}`)}
+                  onClick={() => navigate(`/categories/delete/${category.publicId}`)}
                   className="btn btn-sm btn-danger"
                 >
                   Delete

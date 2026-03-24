@@ -1,7 +1,6 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { Link } from 'react-router-dom';
 
 const UpdateOrderStatus = () => {
-  const { setCurrentPage } = useNavigation();
   // Sample data - replace with actual API call
   const order = {
     publicId: '1',
@@ -61,9 +60,9 @@ const UpdateOrderStatus = () => {
         <button type="submit" className="btn btn-primary">
           Update Status
         </button>
-        <a href="/orders" className="btn btn-secondary">
+        <Link to="/orders" className="btn btn-secondary">
           Cancel
-        </a>
+        </Link>
       </form>
     </div>
   );

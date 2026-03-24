@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const CreateCategory = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Create category');
@@ -32,7 +32,7 @@ const CreateCategory = () => {
         <button type="submit" className="btn btn-primary">
           Create
         </button>
-        <button type="button" onClick={() => setCurrentPage('/categories')} className="btn btn-secondary">
+        <button type="button" onClick={() => navigate('/categories')} className="btn btn-secondary">
           Cancel
         </button>
       </form>

@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const Users = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   // Sample user data - replace with actual API call
   const users = [
     {
@@ -34,7 +34,7 @@ const Users = () => {
   return (
     <div>
       <h1>Users</h1>
-      <button onClick={() => setCurrentPage('/create-user')} className="btn btn-primary">
+      <button onClick={() => navigate('/create-user')} className="btn btn-primary">
         Create New User
       </button>
 
@@ -68,7 +68,7 @@ const Users = () => {
                   />
                 </td>
                 <td>
-                  <a onClick={() => setCurrentPage(`/user-detail/${user.publicId}`)} className="text-decoration-none">{user.name}</a>
+                  <a onClick={() => navigate(`/user-detail/${user.publicId}`)} className="text-decoration-none" style={{cursor: 'pointer'}}>{user.name}</a>
                 </td>
                 <td>{user.lastName}</td>
                 <td>{user.email}</td>
@@ -78,19 +78,19 @@ const Users = () => {
                 <td>{user.role}</td>
                 <td>
                   <button
-                    onClick={() => setCurrentPage(`/update-user/${user.publicId}`)}
+                    onClick={() => navigate(`/update-user/${user.publicId}`)}
                     className="btn btn-warning btn-sm"
                   >
                     Update
                   </button>
                   <button
-                    onClick={() => setCurrentPage(`/reset-password/${user.publicId}`)}
+                    onClick={() => navigate(`/reset-password/${user.publicId}`)}
                     className="btn btn-info btn-sm"
                   >
                     Reset Password
                   </button>
                   <button
-                    onClick={() => setCurrentPage(`/delete-user/${user.publicId}`)}
+                    onClick={() => navigate(`/delete-user/${user.publicId}`)}
                     className="btn btn-danger btn-sm"
                   >
                     Delete

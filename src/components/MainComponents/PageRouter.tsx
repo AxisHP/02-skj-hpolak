@@ -1,3 +1,4 @@
+import { Routes, Route } from 'react-router-dom'
 import Home from '../../pages/Home'
 import Login from '../../pages/Login'
 import Users from '../../pages/Users'
@@ -21,62 +22,47 @@ import DeleteUser from '../../pages/DeleteUser'
 import UserDetail from '../../pages/UserDetail'
 import ResetPassword from '../../pages/ResetPassword'
 import UpdateOrderStatus from '../../pages/UpdateOrderStatus'
+import UserPage from '../user/UserPage'
+import UserPageDetail from '../user/UserPageDetail'
 
-interface PageRouterProps {
-  currentPage: string
-}
-
-const PageRouter = ({ currentPage }: PageRouterProps) => {
-  switch (currentPage) {
-    case '/':
-      return <Home />
-    case '/login':
-      return <Login />
-    case '/users':
-      return <Users />
-    case '/items':
-      return <Items />
-    case '/categories':
-      return <Categories />
-    case '/cart':
-      return <Cart />
-    case '/orders':
-      return <Orders />
-    case '/favourites':
-      return <Favourites />
-    case '/privacy':
-      return <Privacy />
-    case '/create-user':
-      return <CreateUser />
-    case '/items/create':
-      return <CreateItem />
-    case '/categories/create':
-      return <CreateCategory />
-    case '/items/edit':
-      return <EditItem />
-    case '/categories/edit':
-      return <EditCategory />
-    case '/items/details':
-      return <ItemDetails />
-    case '/orders/details':
-      return <OrderDetails />
-    case '/items/delete':
-      return <DeleteItem />
-    case '/categories/delete':
-      return <DeleteCategory />
-    case '/update-user':
-      return <UpdateUser />
-    case '/delete-user':
-      return <DeleteUser />
-    case '/user-detail':
-      return <UserDetail />
-    case '/reset-password':
-      return <ResetPassword />
-    case '/orders/update-status':
-      return <UpdateOrderStatus />
-    default:
-      return <Home />
-  }
+const PageRouter = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/users" element={<Users />} />
+      <Route path="/items" element={<Items />} />
+      <Route path="/categories" element={<Categories />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/orders" element={<Orders />} />
+      <Route path="/favourites" element={<Favourites />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/create-user" element={<CreateUser />} />
+      <Route path="/items/create" element={<CreateItem />} />
+      <Route path="/categories/create" element={<CreateCategory />} />
+      <Route path="/items/edit" element={<EditItem />} />
+      <Route path="/items/edit/:id" element={<EditItem />} />
+      <Route path="/categories/edit" element={<EditCategory />} />
+      <Route path="/categories/edit/:id" element={<EditCategory />} />
+      <Route path="/items/details" element={<ItemDetails />} />
+      <Route path="/items/details/:id" element={<ItemDetails />} />
+      <Route path="/orders/details" element={<OrderDetails />} />
+      <Route path="/orders/details/:id" element={<OrderDetails />} />
+      <Route path="/items/delete" element={<DeleteItem />} />
+      <Route path="/items/delete/:id" element={<DeleteItem />} />
+      <Route path="/categories/delete" element={<DeleteCategory />} />
+      <Route path="/categories/delete/:id" element={<DeleteCategory />} />
+      <Route path="/update-user" element={<UpdateUser />} />
+      <Route path="/delete-user" element={<DeleteUser />} />
+      <Route path="/user-detail" element={<UserDetail />} />
+      <Route path="/user-detail/:id" element={<UserDetail />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/orders/update-status" element={<UpdateOrderStatus />} />
+      <Route path="/orders/update-status/:id" element={<UpdateOrderStatus />} />
+      <Route path="/user/user-page" element={<UserPage />} />
+      <Route path="/user/user-page/:id" element={<UserPageDetail />} />
+    </Routes>
+  )
 }
 
 export default PageRouter

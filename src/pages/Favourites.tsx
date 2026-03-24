@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const Favourites = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   // Sample data - replace with actual API call
   const favourites = [
     {
@@ -43,7 +43,7 @@ const Favourites = () => {
             {favourites.map((fav) => (
               <tr key={fav.itemPublicId}>
                 <td>
-                  <a onClick={() => setCurrentPage(`/items/details/${fav.itemPublicId}`)} className="text-decoration-none">{fav.itemName}</a>
+                  <a onClick={() => navigate(`/items/details/${fav.itemPublicId}`)} className="text-decoration-none" style={{cursor: 'pointer'}}>{fav.itemName}</a>
                 </td>
                 <td>${fav.itemPrice.toFixed(2)}</td>
                 <td>
@@ -68,7 +68,7 @@ const Favourites = () => {
       ) : (
         <>
           <p>You have no favourites yet.</p>
-          <button onClick={() => setCurrentPage('/items')} className="btn btn-primary">
+          <button onClick={() => navigate('/items')} className="btn btn-primary">
             Browse Items
           </button>
         </>

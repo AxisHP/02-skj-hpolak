@@ -1,7 +1,7 @@
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
-  const { setCurrentPage } = useNavigation();
+  const navigate = useNavigate();
   // Sample cart data - replace with actual state management
   const cartItems = [
     {
@@ -117,7 +117,7 @@ const Cart = () => {
       ) : (
         <>
           <p>Your cart is empty.</p>
-          <button onClick={() => setCurrentPage('/items')} className="btn btn-primary">
+          <button onClick={() => navigate('/items')} className="btn btn-primary">
             Browse Items
           </button>
         </>

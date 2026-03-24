@@ -1,13 +1,11 @@
-import { useNavigation } from '../../contexts/NavigationContext';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
-  const { setCurrentPage } = useNavigation();
-
   return (
     <>
       <footer className="border-top footer text-muted">
         <div className="container">
-          &copy; 2026 - heinrich_polak_4D_aspnet_2 - <a onClick={() => setCurrentPage('/privacy')} className="text-decoration-none">Privacy</a>
+          &copy; 2026 - heinrich_polak_4D_aspnet_2 - <Link to="/privacy" className="text-decoration-none">Privacy</Link>
         </div>
       </footer>
     </>
