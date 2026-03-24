@@ -1,21 +1,57 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getUser, updateUser } from '../api/usersApi';
+import { UserRole } from '../types/enums';
+import type { UserUpdateRequest } from '../types/User';
 
 const UpdateUser = () => {
-  // Sample data - replace with actual API call
-  const user = {
-    publicId: '1',
-    name: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    dateOfBirth: '1990-01-15',
-    phoneNumber: '123-456-7890',
-    address: '123 Main St',
-    role: 'User',
-  };
+  const { id } = useParams();
+  const missingIdError = !id ? 'Missing user id' : null;
+  const [formData, setFormData] = useState<UserUpdateRequest>({
+    name: '',
+    lastName: '',
+    email: '',
+    dateOfBirth: '',
+    phoneNumber: '',
+    address: '',
+    role: UserRole.Customer,
+  });
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    getUser(id)
+      .then((u) => {
+        setFormData({
+          name: u.name,
+          lastName: u.lastName,
+          email: u.email,
+          dateOfBirth: u.dateOfBirth,
+          phoneNumber: u.phoneNumber,
+          address: u.address,
+          role: u.role,
+        });
+      })
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load user'));
+  }, [id]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Update user');
+    if (!id) return;
+    setError(null);
+    setMessage(null);
+
+    try {
+      await updateUser(id, formData);
+      setMessage('User updated successfully.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update user');
+    }
   };
 
   return (
@@ -25,7 +61,6 @@ const UpdateUser = () => {
           <h1>Update User</h1>
 
           <form onSubmit={handleSubmit}>
-            <input type="hidden" name="publicId" value={user.publicId} />
             <div className="mb-3">
               <label htmlFor="name" className="form-label">
                 Name
@@ -34,7 +69,8 @@ const UpdateUser = () => {
                 id="name"
                 name="name"
                 className="form-control"
-                defaultValue={user.name}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
             </div>
@@ -46,7 +82,8 @@ const UpdateUser = () => {
                 id="lastName"
                 name="lastName"
                 className="form-control"
-                defaultValue={user.lastName}
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                 required
               />
             </div>
@@ -59,7 +96,8 @@ const UpdateUser = () => {
                 name="email"
                 type="email"
                 className="form-control"
-                defaultValue={user.email}
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
             </div>
@@ -72,7 +110,8 @@ const UpdateUser = () => {
                 name="dateOfBirth"
                 type="date"
                 className="form-control"
-                defaultValue={user.dateOfBirth}
+                value={formData.dateOfBirth}
+                onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
               />
             </div>
             <div className="mb-3">
@@ -83,7 +122,8 @@ const UpdateUser = () => {
                 id="phoneNumber"
                 name="phoneNumber"
                 className="form-control"
-                defaultValue={user.phoneNumber}
+                value={formData.phoneNumber}
+                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
               />
             </div>
             <div className="mb-3">
@@ -94,7 +134,8 @@ const UpdateUser = () => {
                 id="address"
                 name="address"
                 className="form-control"
-                defaultValue={user.address}
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               />
             </div>
             <div className="mb-3">
@@ -105,12 +146,15 @@ const UpdateUser = () => {
                 id="role"
                 name="role"
                 className="form-select"
-                defaultValue={user.role}
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: Number(e.target.value) as UserRole })}
               >
-                <option value="User">User</option>
-                <option value="Admin">Admin</option>
+                <option value={UserRole.Customer}>Customer</option>
+                <option value={UserRole.Admin}>Admin</option>
               </select>
             </div>
+            {(missingIdError || error) && <div className="alert alert-danger">{missingIdError ?? error}</div>}
+            {message && <div className="alert alert-success">{message}</div>}
             <button type="submit" className="btn btn-primary">
               Update
             </button>

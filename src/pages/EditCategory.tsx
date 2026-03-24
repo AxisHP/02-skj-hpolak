@@ -1,17 +1,40 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getCategory } from '../api/catalogApi';
+import { updateCategory } from '../api/categoriesApi';
 
 const EditCategory = () => {
   const navigate = useNavigate();
-  // Sample data - replace with actual API call
-  const category = {
-    publicId: '1',
-    name: 'Electronics',
-    description: 'Electronic devices and gadgets',
-  };
+  const { id } = useParams();
+  const missingIdError = !id ? 'Missing category id' : null;
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    getCategory(id)
+      .then((cat) => {
+        setName(cat.name);
+        setDescription(cat.description);
+      })
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load category'));
+  }, [id]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Update category');
+    if (!id) return;
+    setError(null);
+    try {
+      await updateCategory(id, { name, description });
+      navigate('/categories');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update category');
+    }
   };
 
   return (
@@ -19,7 +42,6 @@ const EditCategory = () => {
       <h1>Edit Category</h1>
 
       <form onSubmit={handleSubmit}>
-        <input type="hidden" name="publicId" value={category.publicId} />
         <div className="mb-3">
           <label htmlFor="name" className="form-label">
             Name
@@ -28,7 +50,8 @@ const EditCategory = () => {
             id="name"
             name="name"
             className="form-control"
-            defaultValue={category.name}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
         </div>
         <div className="mb-3">
@@ -40,9 +63,11 @@ const EditCategory = () => {
             name="description"
             className="form-control"
             rows={3}
-            defaultValue={category.description}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           ></textarea>
         </div>
+        {(missingIdError || error) && <div className="alert alert-danger">{missingIdError ?? error}</div>}
         <button type="submit" className="btn btn-primary">
           Save
         </button>

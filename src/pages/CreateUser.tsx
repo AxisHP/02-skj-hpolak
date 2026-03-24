@@ -1,10 +1,36 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { register } from '../api/authApi';
+import { setCurrentUser } from '../auth/session';
 
 const CreateUser = () => {
   const navigate = useNavigate();
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    lastName: '',
+    email: '',
+    password: '',
+    dateOfBirth: '',
+    phoneNumber: '',
+    address: '',
+  });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Create user');
+    setError(null);
+    setLoading(true);
+    try {
+      const user = await register(formData);
+      setCurrentUser(user);
+      navigate('/');
+      window.location.reload();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Could not create user');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -18,13 +44,13 @@ const CreateUser = () => {
               <label htmlFor="name" className="form-label">
                 Name
               </label>
-              <input id="name" name="name" className="form-control" required />
+              <input id="name" name="name" className="form-control" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
             </div>
             <div className="mb-3">
               <label htmlFor="lastName" className="form-label">
                 Last Name
               </label>
-              <input id="lastName" name="lastName" className="form-control" required />
+              <input id="lastName" name="lastName" className="form-control" required value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} />
             </div>
             <div className="mb-3">
               <label htmlFor="email" className="form-label">
@@ -35,6 +61,8 @@ const CreateUser = () => {
                 name="email"
                 type="email"
                 className="form-control"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
             </div>
@@ -47,6 +75,8 @@ const CreateUser = () => {
                 name="password"
                 type="password"
                 className="form-control"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
             </div>
@@ -59,6 +89,8 @@ const CreateUser = () => {
                 name="dateOfBirth"
                 type="date"
                 className="form-control"
+                value={formData.dateOfBirth}
+                onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
               />
             </div>
             <div className="mb-3">
@@ -69,24 +101,18 @@ const CreateUser = () => {
                 id="phoneNumber"
                 name="phoneNumber"
                 className="form-control"
+                value={formData.phoneNumber}
+                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
               />
             </div>
             <div className="mb-3">
               <label htmlFor="address" className="form-label">
                 Address
               </label>
-              <input id="address" name="address" className="form-control" />
+              <input id="address" name="address" className="form-control" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
             </div>
-            <div className="mb-3">
-              <label htmlFor="role" className="form-label">
-                Role
-              </label>
-              <select id="role" name="role" className="form-select">
-                <option value="User">User</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-            <button type="submit" className="btn btn-primary">
+            {error && <div className="alert alert-danger">{error}</div>}
+            <button type="submit" className="btn btn-primary" disabled={loading}>
               Create
             </button>
             <button type="button" onClick={() => navigate('/users')} className="btn btn-secondary">

@@ -1,39 +1,51 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { deleteUsers, getUsers } from '../api/usersApi';
+import type { User } from '../types/User';
+import { userRoleLabel } from '../types/enums';
+import { getCurrentUser, isAdmin } from '../auth/session';
 
 const Users = () => {
   const navigate = useNavigate();
-  // Sample user data - replace with actual API call
-  const users = [
-    {
-      publicId: '1',
-      name: 'John',
-      lastName: 'Doe',
-      email: 'john@example.com',
-      dateOfBirth: '1990-01-15',
-      phoneNumber: '123-456-7890',
-      address: '123 Main St',
-      role: 'User',
-    },
-    {
-      publicId: '2',
-      name: 'Jane',
-      lastName: 'Smith',
-      email: 'jane@example.com',
-      dateOfBirth: '1985-06-20',
-      phoneNumber: '987-654-3210',
-      address: '456 Oak Ave',
-      role: 'Admin',
-    },
-  ];
+  const [users, setUsers] = useState<User[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleDeleteSelected = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!isAdmin(getCurrentUser())) {
+      navigate('/');
+      return;
+    }
+
+    getUsers()
+      .then(setUsers)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to fetch users'))
+      .finally(() => setLoading(false));
+  }, [navigate]);
+
+  const handleDeleteSelected = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Delete selected users');
+    if (selectedIds.length === 0) {
+      setError('Select at least one user to delete.');
+      return;
+    }
+
+    try {
+      await deleteUsers(selectedIds);
+      setUsers((prev) => prev.filter((u) => !selectedIds.includes(u.publicId)));
+      setSelectedIds([]);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete selected users');
+    }
   };
+
+  if (loading) return <p>Loading users...</p>;
 
   return (
     <div>
       <h1>Users</h1>
+      {error && <div className="alert alert-danger">{error}</div>}
       <button onClick={() => navigate('/create-user')} className="btn btn-primary">
         Create New User
       </button>
@@ -65,6 +77,14 @@ const Users = () => {
                     type="checkbox"
                     name="selectedUserIds"
                     value={user.publicId}
+                    checked={selectedIds.includes(user.publicId)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds((prev) => [...prev, user.publicId]);
+                      } else {
+                        setSelectedIds((prev) => prev.filter((id) => id !== user.publicId));
+                      }
+                    }}
                   />
                 </td>
                 <td>
@@ -75,7 +95,7 @@ const Users = () => {
                 <td>{user.dateOfBirth}</td>
                 <td>{user.phoneNumber}</td>
                 <td>{user.address}</td>
-                <td>{user.role}</td>
+                <td>{userRoleLabel(user.role)}</td>
                 <td>
                   <button
                     onClick={() => navigate(`/update-user/${user.publicId}`)}

@@ -1,34 +1,71 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { addToCart } from '../api/cartApi';
+import { getFavourites, removeFavourite } from '../api/favouritesApi';
+import type { Favourite } from '../types/Favourite';
+import { getCurrentUser } from '../auth/session';
 
 const Favourites = () => {
   const navigate = useNavigate();
-  // Sample data - replace with actual API call
-  const favourites = [
-    {
-      itemPublicId: '1',
-      itemName: 'Laptop',
-      itemPrice: 999.99,
-    },
-    {
-      itemPublicId: '2',
-      itemName: 'Wireless Headphones',
-      itemPrice: 149.99,
-    },
-  ];
+  const user = getCurrentUser();
+  const missingUserError = !user ? 'You must be logged in to view favourites.' : null;
+  const [favourites, setFavourites] = useState<Favourite[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleAddToCart = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Add to cart');
+  const loadFavourites = async () => {
+    if (!user) {
+      return;
+    }
+
+    try {
+      const data = await getFavourites(user.publicId);
+      setFavourites(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load favourites');
+    }
   };
 
-  const handleRemove = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    getFavourites(user.publicId)
+      .then(setFavourites)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load favourites'));
+  }, [user]);
+
+  const handleAddToCart = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Remove from favourites');
+    if (!user) return;
+    const formData = new FormData(e.currentTarget);
+    const itemPublicId = String(formData.get('ItemPublicId'));
+
+    try {
+      await addToCart(user.publicId, itemPublicId, 1);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to add to cart');
+    }
+  };
+
+  const handleRemove = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user) return;
+    const formData = new FormData(e.currentTarget);
+    const itemPublicId = String(formData.get('itemPublicId'));
+
+    try {
+      await removeFavourite(user.publicId, itemPublicId);
+      await loadFavourites();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to remove favourite');
+    }
   };
 
   return (
     <div>
       <h1>My Favourites</h1>
+      {(missingUserError || error) && <div className="alert alert-danger">{missingUserError ?? error}</div>}
 
       {favourites.length > 0 ? (
         <table className="table">

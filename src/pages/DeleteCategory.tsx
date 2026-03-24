@@ -1,18 +1,41 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getCategory } from '../api/catalogApi';
+import { deleteCategory } from '../api/categoriesApi';
+import type { Category } from '../types/Category';
 
 const DeleteCategory = () => {
   const navigate = useNavigate();
-  // Sample data - replace with actual API call
-  const category = {
-    publicId: '1',
-    name: 'Electronics',
-    description: 'Electronic devices and gadgets',
+  const { id } = useParams();
+  const missingIdError = !id ? 'Missing category id' : null;
+  const [category, setCategory] = useState<Category | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    getCategory(id)
+      .then(setCategory)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load category'));
+  }, [id]);
+
+  const handleDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    try {
+      await deleteCategory(id);
+      navigate('/categories');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete category');
+    }
   };
 
-  const handleDelete = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Delete category');
-  };
+  if ((missingIdError || error) && !category) return <div className="alert alert-danger">{missingIdError ?? error}</div>;
+  if (!category) return <p>Loading category...</p>;
 
   return (
     <div>

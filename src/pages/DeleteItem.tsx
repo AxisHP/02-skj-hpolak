@@ -1,19 +1,41 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getItem } from '../api/catalogApi';
+import { deleteItem } from '../api/itemsApi';
+import type { Item } from '../types/Item';
 
 const DeleteItem = () => {
   const navigate = useNavigate();
-  // Sample data - replace with actual API call
-  const item = {
-    publicId: '1',
-    name: 'Laptop',
-    description: 'High-performance laptop',
-    price: 999.99,
+  const { id } = useParams();
+  const missingIdError = !id ? 'Missing item id' : null;
+  const [item, setItem] = useState<Item | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    getItem(id)
+      .then(setItem)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load item'));
+  }, [id]);
+
+  const handleDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    try {
+      await deleteItem(id);
+      navigate('/items');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete item');
+    }
   };
 
-  const handleDelete = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Delete item');
-  };
+  if ((missingIdError || error) && !item) return <div className="alert alert-danger">{missingIdError ?? error}</div>;
+  if (!item) return <p>Loading item...</p>;
 
   return (
     <div>

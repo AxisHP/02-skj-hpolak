@@ -1,41 +1,64 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { cancelOrder, getAdminOrders, getUserOrders } from '../api/ordersApi';
+import type { Order } from '../types/Order';
+import { OrderStatus, orderStatusLabel } from '../types/enums';
+import { getCurrentUser, isAdmin } from '../auth/session';
 
 const Orders = () => {
   const navigate = useNavigate();
-  // Sample data - replace with actual API call
-  const orders = [
-    {
-      publicId: '1',
-      orderDate: new Date('2026-02-01T10:30:00'),
-      userName: 'John Doe',
-      totalAmount: 1059.97,
-      status: 'Pending',
-    },
-    {
-      publicId: '2',
-      orderDate: new Date('2026-01-28T14:15:00'),
-      userName: 'Jane Smith',
-      totalAmount: 89.97,
-      status: 'Delivered',
-    },
-  ];
+  const user = getCurrentUser();
+  const admin = isAdmin(user);
+  const missingUserError = !user ? 'You must be logged in to view orders.' : null;
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const isAdmin = true; // Replace with actual auth check
+  const loadOrders = async () => {
+    if (!user) {
+      return;
+    }
 
-  const handleCancel = (e: React.FormEvent) => {
+    try {
+      const data = admin ? await getAdminOrders() : await getUserOrders(user.publicId);
+      setOrders(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load orders');
+    }
+  };
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const request = admin ? getAdminOrders() : getUserOrders(user.publicId);
+    request
+      .then(setOrders)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load orders'));
+  }, [admin, user]);
+
+  const handleCancel = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Cancel order');
+    const formData = new FormData(e.currentTarget);
+    const publicId = String(formData.get('publicId'));
+    try {
+      await cancelOrder(publicId);
+      await loadOrders();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel order');
+    }
   };
 
   return (
     <div>
       <h1>Orders</h1>
+      {(missingUserError || error) && <div className="alert alert-danger">{missingUserError ?? error}</div>}
 
       <table className="table">
         <thead>
           <tr>
             <th>Order Date</th>
-            {isAdmin && <th>Customer</th>}
+            {admin && <th>Customer</th>}
             <th>Total</th>
             <th>Status</th>
             <th>Actions</th>
@@ -44,10 +67,10 @@ const Orders = () => {
         <tbody>
           {orders.map((order) => (
             <tr key={order.publicId}>
-              <td>{order.orderDate.toLocaleString()}</td>
-              {isAdmin && <td>{order.userName}</td>}
+              <td>{new Date(order.orderDate).toLocaleString()}</td>
+              {admin && <td>{order.userName}</td>}
               <td>${order.totalAmount.toFixed(2)}</td>
-              <td>{order.status}</td>
+              <td>{orderStatusLabel(order.status)}</td>
               <td>
                 <button
                   onClick={() => navigate(`/orders/details/${order.publicId}`)}
@@ -55,7 +78,7 @@ const Orders = () => {
                 >
                   Details
                 </button>
-                {isAdmin && (
+                {admin && (
                   <>
                     <button
                       onClick={() => navigate(`/orders/update-status/${order.publicId}`)}
@@ -63,7 +86,7 @@ const Orders = () => {
                     >
                       Update Status
                     </button>
-                    {order.status !== 'Canceled' && order.status !== 'Delivered' && (
+                    {order.status !== OrderStatus.Canceled && order.status !== OrderStatus.Delivered && (
                       <form onSubmit={handleCancel} className="d-inline">
                         <input type="hidden" name="publicId" value={order.publicId} />
                         <button type="submit" className="btn btn-sm btn-danger">

@@ -1,21 +1,53 @@
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { getAdminOrderDetails, updateOrderStatus } from '../api/ordersApi';
+import type { Order } from '../types/Order';
+import { OrderStatus, orderStatusLabel } from '../types/enums';
 
 const UpdateOrderStatus = () => {
-  // Sample data - replace with actual API call
-  const order = {
-    publicId: '1',
-    orderDate: new Date('2026-02-01T10:30:00'),
-    userName: 'John Doe',
-    currentStatus: 'Pending',
-    totalAmount: 1059.97,
-  };
+  const { id } = useParams();
+  const missingIdError = !id ? 'Missing order id' : null;
+  const [order, setOrder] = useState<Order | null>(null);
+  const [status, setStatus] = useState<OrderStatus>(OrderStatus.Payed);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const statuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Canceled'];
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
 
-  const handleSubmit = (e: React.FormEvent) => {
+    getAdminOrderDetails(id)
+      .then((data) => {
+        setOrder(data);
+        setStatus(data.status);
+      })
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load order'));
+  }, [id]);
+
+  const statuses = [
+    OrderStatus.Payed,
+    OrderStatus.GettingReady,
+    OrderStatus.Delivering,
+    OrderStatus.Delivered,
+    OrderStatus.Canceled,
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Update order status');
+    if (!id) return;
+
+    try {
+      await updateOrderStatus(id, status);
+      setMessage('Order status updated.');
+      setError(null);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update order status');
+    }
   };
+
+  if ((missingIdError || error) && !order) return <div className="alert alert-danger">{missingIdError ?? error}</div>;
+  if (!order) return <p>Loading order...</p>;
 
   return (
     <div>
@@ -24,7 +56,7 @@ const UpdateOrderStatus = () => {
       <div className="card mb-3 w-50">
         <div className="card-body">
           <p>
-            <strong>Order Date:</strong> {order.orderDate.toLocaleString()}
+            <strong>Order Date:</strong> {new Date(order.orderDate).toLocaleString()}
           </p>
           <p>
             <strong>Customer:</strong> {order.userName}
@@ -33,13 +65,12 @@ const UpdateOrderStatus = () => {
             <strong>Total:</strong> ${order.totalAmount.toFixed(2)}
           </p>
           <p>
-            <strong>Current Status:</strong> {order.currentStatus}
+            <strong>Current Status:</strong> {orderStatusLabel(order.status)}
           </p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <input type="hidden" name="publicId" value={order.publicId} />
         <div className="mb-3">
           <label htmlFor="status" className="form-label">
             New Status
@@ -48,15 +79,18 @@ const UpdateOrderStatus = () => {
             id="status"
             name="status"
             className="form-select w-auto"
-            defaultValue={order.currentStatus}
+            value={status}
+            onChange={(e) => setStatus(Number(e.target.value) as OrderStatus)}
           >
-            {statuses.map((status) => (
-              <option key={status} value={status}>
-                {status}
+            {statuses.map((orderStatus) => (
+              <option key={orderStatus} value={orderStatus}>
+                {orderStatusLabel(orderStatus)}
               </option>
             ))}
           </select>
         </div>
+        {error && <div className="alert alert-danger">{error}</div>}
+        {message && <div className="alert alert-success">{message}</div>}
         <button type="submit" className="btn btn-primary">
           Update Status
         </button>

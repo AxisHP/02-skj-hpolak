@@ -1,10 +1,30 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { login } from '../api/authApi';
+import { setCurrentUser } from '../auth/session';
 
 const Login = () => {
   const navigate = useNavigate();
-  const handleSubmit = (e: React.FormEvent) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login submitted');
+    setError(null);
+    setLoading(true);
+
+    try {
+      const user = await login({ email, password });
+      setCurrentUser(user);
+      navigate('/');
+      window.location.reload();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,6 +42,8 @@ const Login = () => {
                 className="form-control"
                 id="email"
                 name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -35,11 +57,15 @@ const Login = () => {
                 className="form-control"
                 id="password"
                 name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
 
-            <button type="submit" className="btn btn-primary">
+            {error && <div className="alert alert-danger">{error}</div>}
+
+            <button type="submit" className="btn btn-primary" disabled={loading}>
               Login
             </button>
             <button type="button" onClick={() => navigate('/')} className="btn btn-secondary">

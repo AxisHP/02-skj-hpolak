@@ -22,8 +22,6 @@ import DeleteUser from '../../pages/DeleteUser'
 import UserDetail from '../../pages/UserDetail'
 import ResetPassword from '../../pages/ResetPassword'
 import UpdateOrderStatus from '../../pages/UpdateOrderStatus'
-import UserPage from '../user/UserPage'
-import UserPageDetail from '../user/UserPageDetail'
 
 const PageRouter = () => {
   return (
@@ -52,15 +50,12 @@ const PageRouter = () => {
       <Route path="/items/delete/:id" element={<DeleteItem />} />
       <Route path="/categories/delete" element={<DeleteCategory />} />
       <Route path="/categories/delete/:id" element={<DeleteCategory />} />
-      <Route path="/update-user" element={<UpdateUser />} />
-      <Route path="/delete-user" element={<DeleteUser />} />
-      <Route path="/user-detail" element={<UserDetail />} />
+      <Route path="/update-user/:id" element={<UpdateUser />} />
+      <Route path="/delete-user/:id" element={<DeleteUser />} />
       <Route path="/user-detail/:id" element={<UserDetail />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/reset-password/:id" element={<ResetPassword />} />
       <Route path="/orders/update-status" element={<UpdateOrderStatus />} />
       <Route path="/orders/update-status/:id" element={<UpdateOrderStatus />} />
-      <Route path="/user/user-page" element={<UserPage />} />
-      <Route path="/user/user-page/:id" element={<UserPageDetail />} />
     </Routes>
   )
 }

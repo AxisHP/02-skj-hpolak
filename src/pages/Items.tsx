@@ -1,44 +1,49 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { getCategories, getItems } from '../api/catalogApi';
+import type { Category } from '../types/Category';
+import type { Item } from '../types/Item';
+import { getCurrentUser, isAdmin } from '../auth/session';
 
 const Items = () => {
   const navigate = useNavigate();
-  // Sample data - replace with actual API calls
-  const categories = [
-    { publicId: '1', name: 'Electronics' },
-    { publicId: '2', name: 'Clothing' },
-  ];
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [categoryId, setCategoryId] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const admin = isAdmin(getCurrentUser());
 
-  const items = [
-    {
-      publicId: '1',
-      name: 'Laptop',
-      price: 999.99,
-      stockQuantity: 15,
-      categoryName: 'Electronics',
-    },
-    {
-      publicId: '2',
-      name: 'T-Shirt',
-      price: 19.99,
-      stockQuantity: 50,
-      categoryName: 'Clothing',
-    },
-  ];
+  const loadItems = async (selectedCategoryId?: string) => {
+    try {
+      const data = await getItems(selectedCategoryId);
+      setItems(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load items');
+    }
+  };
 
-  const isAdmin = true; // Replace with actual auth check
+  useEffect(() => {
+    getCategories()
+      .then(setCategories)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load categories'));
+    getItems()
+      .then(setItems)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load items'));
+  }, []);
 
-  const handleFilterSubmit = (e: React.FormEvent) => {
+  const handleFilterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Filter items');
+    await loadItems(categoryId || undefined);
   };
 
   return (
     <div>
       <h1>Items</h1>
+      {error && <div className="alert alert-danger">{error}</div>}
 
       <div className="mb-3">
         <form onSubmit={handleFilterSubmit} className="d-flex gap-2">
-          <select name="categoryId" className="form-select w-auto">
+          <select name="categoryId" className="form-select w-auto" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
             <option value="">All Categories</option>
             {categories.map((cat) => (
               <option key={cat.publicId} value={cat.publicId}>
@@ -52,7 +57,7 @@ const Items = () => {
         </form>
       </div>
 
-      {isAdmin && (
+      {admin && (
         <p>
           <button onClick={() => navigate('/items/create')} className="btn btn-primary">
             Create New Item
@@ -84,7 +89,7 @@ const Items = () => {
                 >
                   Details
                 </button>
-                {isAdmin && (
+                {admin && (
                   <>
                     <button
                       onClick={() => navigate(`/items/edit/${item.publicId}`)}

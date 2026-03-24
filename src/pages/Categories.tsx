@@ -1,35 +1,33 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { getCategories } from '../api/catalogApi';
+import type { Category } from '../types/Category';
+import { getCurrentUser, isAdmin } from '../auth/session';
 
 const Categories = () => {
   const navigate = useNavigate();
-  // Sample data - replace with actual API call
-  const categories = [
-    {
-      publicId: '1',
-      name: 'Electronics',
-      description: 'Electronic devices and gadgets',
-    },
-    {
-      publicId: '2',
-      name: 'Clothing',
-      description: 'Apparel and fashion items',
-    },
-    {
-      publicId: '3',
-      name: 'Books',
-      description: 'Books and publications',
-    },
-  ];
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const admin = isAdmin(getCurrentUser());
+
+  useEffect(() => {
+    getCategories()
+      .then(setCategories)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load categories'));
+  }, []);
 
   return (
     <div>
       <h1>Categories</h1>
+      {error && <div className="alert alert-danger">{error}</div>}
 
-      <p>
-        <button onClick={() => navigate('/categories/create')} className="btn btn-primary">
-          Create New Category
-        </button>
-      </p>
+      {admin && (
+        <p>
+          <button onClick={() => navigate('/categories/create')} className="btn btn-primary">
+            Create New Category
+          </button>
+        </p>
+      )}
 
       <table className="table">
         <thead>
@@ -45,18 +43,22 @@ const Categories = () => {
               <td>{category.name}</td>
               <td>{category.description}</td>
               <td>
-                <button
-                  onClick={() => navigate(`/categories/edit/${category.publicId}`)}
-                  className="btn btn-sm btn-warning"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => navigate(`/categories/delete/${category.publicId}`)}
-                  className="btn btn-sm btn-danger"
-                >
-                  Delete
-                </button>
+                {admin && (
+                  <>
+                    <button
+                      onClick={() => navigate(`/categories/edit/${category.publicId}`)}
+                      className="btn btn-sm btn-warning"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => navigate(`/categories/delete/${category.publicId}`)}
+                      className="btn btn-sm btn-danger"
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
               </td>
             </tr>
           ))}

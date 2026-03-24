@@ -1,17 +1,28 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getUser } from '../api/usersApi';
+import type { User } from '../types/User';
+import { userRoleLabel } from '../types/enums';
 
 const UserDetail = () => {
-  // Sample data - replace with actual API call
-  const user = {
-    publicId: '1',
-    name: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    dateOfBirth: '1990-01-15',
-    phoneNumber: '123-456-7890',
-    address: '123 Main St',
-    role: 'User',
-  };
+  const { id } = useParams();
+  const missingIdError = !id ? 'Missing user id' : null;
+  const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    getUser(id)
+      .then(setUser)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load user'));
+  }, [id]);
+
+  if (missingIdError || error) return <div className="alert alert-danger">{missingIdError ?? error}</div>;
+  if (!user) return <p>Loading user...</p>;
 
   return (
     <div className="container">
@@ -37,7 +48,7 @@ const UserDetail = () => {
                 <strong>Address:</strong> {user.address}
               </p>
               <p>
-                <strong>Role:</strong> {user.role}
+                <strong>Role:</strong> {userRoleLabel(user.role)}
               </p>
             </div>
           </div>

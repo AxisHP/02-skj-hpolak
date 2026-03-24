@@ -1,10 +1,22 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { createCategory } from '../api/categoriesApi';
 
 const CreateCategory = () => {
   const navigate = useNavigate();
-  const handleSubmit = (e: React.FormEvent) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Create category');
+    setError(null);
+    try {
+      await createCategory({ name, description });
+      navigate('/categories');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create category');
+    }
   };
 
   return (
@@ -16,7 +28,7 @@ const CreateCategory = () => {
           <label htmlFor="name" className="form-label">
             Name
           </label>
-          <input id="name" name="name" className="form-control" required />
+          <input id="name" name="name" className="form-control" required value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="mb-3">
           <label htmlFor="description" className="form-label">
@@ -27,8 +39,11 @@ const CreateCategory = () => {
             name="description"
             className="form-control"
             rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           ></textarea>
         </div>
+        {error && <div className="alert alert-danger">{error}</div>}
         <button type="submit" className="btn btn-primary">
           Create
         </button>

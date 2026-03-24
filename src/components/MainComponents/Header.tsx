@@ -1,9 +1,18 @@
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { clearCurrentUser, getCurrentUser, isAdmin } from '../../auth/session';
 
 const Header = () => {
+    const navigate = useNavigate();
+    const [sessionUser, setSessionUser] = useState(() => getCurrentUser());
+    const hasUser = Boolean(sessionUser);
+    const admin = isAdmin(sessionUser);
+
     const handleLogout = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Logout clicked');
+        clearCurrentUser();
+        setSessionUser(null);
+        navigate('/login');
     };
 
     return (
@@ -31,32 +40,53 @@ const Header = () => {
                         <li className="nav-item">
                         <NavLink className="nav-link text-dark" to="/items">Items</NavLink>
                         </li>
-                        <li className="nav-item">
-                        <NavLink className="nav-link text-dark" to="/users">Users</NavLink>
-                        </li>
-                        <li className="nav-item">
-                        <NavLink className="nav-link text-dark" to="/categories">Categories</NavLink>
-                        </li>
-                        <li className="nav-item">
-                        <NavLink className="nav-link text-dark" to="/cart">Cart</NavLink>
-                        </li>
-                        <li className="nav-item">
-                        <NavLink className="nav-link text-dark" to="/favourites">Favourites</NavLink>
-                        </li>
-                        <li className="nav-item">
-                        <NavLink className="nav-link text-dark" to="/orders">Orders</NavLink>
-                        </li>
-                        <li className="nav-item">
-                        <form onSubmit={handleLogout}>
-                            <button type="submit" className="btn nav-link text-dark">Logout</button>
-                        </form>
-                        </li>
-                        <li className="nav-item">
-                        <NavLink className="nav-link text-dark" to="/create-user">Register</NavLink>
-                        </li>
-                        <li className="nav-item">
-                        <NavLink className="nav-link text-dark" to="/login">Login</NavLink>
-                        </li>
+                        {admin && (
+                            <li className="nav-item">
+                            <NavLink className="nav-link text-dark" to="/users">Users</NavLink>
+                            </li>
+                        )}
+                        {admin && (
+                            <li className="nav-item">
+                            <NavLink className="nav-link text-dark" to="/categories">Categories</NavLink>
+                            </li>
+                        )}
+                        {hasUser && (
+                            <li className="nav-item">
+                            <NavLink className="nav-link text-dark" to="/cart">Cart</NavLink>
+                            </li>
+                        )}
+                        {hasUser && (
+                            <li className="nav-item">
+                            <NavLink className="nav-link text-dark" to="/favourites">Favourites</NavLink>
+                            </li>
+                        )}
+                        {hasUser && (
+                            <li className="nav-item">
+                            <NavLink className="nav-link text-dark" to="/orders">Orders</NavLink>
+                            </li>
+                        )}
+                        {hasUser && (
+                            <li className="nav-item">
+                            <span className="nav-link text-dark">{sessionUser?.name}</span>
+                            </li>
+                        )}
+                        {!hasUser && (
+                            <li className="nav-item">
+                            <NavLink className="nav-link text-dark" to="/create-user">Register</NavLink>
+                            </li>
+                        )}
+                        {!hasUser && (
+                            <li className="nav-item">
+                            <NavLink className="nav-link text-dark" to="/login">Login</NavLink>
+                            </li>
+                        )}
+                        {hasUser && (
+                            <li className="nav-item">
+                            <form onSubmit={handleLogout}>
+                                <button type="submit" className="btn nav-link text-dark">Logout</button>
+                            </form>
+                            </li>
+                        )}
                     </ul>
                     </div>
                 </div>

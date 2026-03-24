@@ -1,32 +1,86 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getItem } from '../api/catalogApi';
+import { addToCart } from '../api/cartApi';
+import { addFavourite, getFavourites, removeFavourite } from '../api/favouritesApi';
+import type { Item } from '../types/Item';
+import { getCurrentUser } from '../auth/session';
 
 const ItemDetails = () => {
-  // Sample data - replace with actual API call
-  const item = {
-    publicId: '1',
-    name: 'Laptop',
-    description: 'High-performance laptop with 16GB RAM and 512GB SSD',
-    price: 999.99,
-    stockQuantity: 15,
-    categoryName: 'Electronics',
-  };
+  const { id } = useParams();
+  const currentUser = getCurrentUser();
+  const missingIdError = !id ? 'Missing item id' : null;
+  const [item, setItem] = useState<Item | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [isFavourite, setIsFavourite] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const isFavourite = false;
-  const isLoggedIn = true; // Replace with actual auth check
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
 
-  const handleAddToCart = (e: React.FormEvent) => {
+    getItem(id)
+      .then(setItem)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load item'));
+
+    if (currentUser) {
+      getFavourites(currentUser.publicId)
+        .then((favs) => setIsFavourite(favs.some((fav) => fav.itemPublicId === id)))
+        .catch(() => setIsFavourite(false));
+    }
+  }, [id, currentUser]);
+
+  const handleAddToCart = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Add to cart');
+    if (!currentUser || !item) {
+      setError('You must be logged in to add items to cart.');
+      return;
+    }
+
+    try {
+      await addToCart(currentUser.publicId, item.publicId, quantity);
+      setMessage('Item added to cart.');
+      setError(null);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to add item to cart');
+    }
   };
 
-  const handleToggleFavourite = (e: React.FormEvent) => {
+  const handleToggleFavourite = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Toggle favourite');
+    if (!currentUser || !item) {
+      setError('You must be logged in to manage favourites.');
+      return;
+    }
+
+    try {
+      if (isFavourite) {
+        await removeFavourite(currentUser.publicId, item.publicId);
+        setIsFavourite(false);
+        setMessage('Item removed from favourites.');
+      } else {
+        await addFavourite(currentUser.publicId, item.publicId);
+        setIsFavourite(true);
+        setMessage('Item added to favourites.');
+      }
+      setError(null);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update favourites');
+    }
   };
+
+  if ((missingIdError || error) && !item) return <div className="alert alert-danger">{missingIdError ?? error}</div>;
+  if (!item) return <p>Loading item...</p>;
+  const isLoggedIn = Boolean(currentUser);
 
   return (
     <div>
       <h1>{item.name}</h1>
+      {error && <div className="alert alert-danger">{error}</div>}
+      {message && <div className="alert alert-success">{message}</div>}
 
       <div className="card w-50">
         <div className="card-body">
@@ -50,7 +104,8 @@ const ItemDetails = () => {
                 <input
                   type="number"
                   name="quantity"
-                  defaultValue={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
                   min="1"
                   max="1000"
                   className="form-control form-control-sm d-inline-block"

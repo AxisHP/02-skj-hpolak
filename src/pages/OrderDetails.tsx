@@ -1,26 +1,34 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getAdminOrderDetails, getUserOrderDetails } from '../api/ordersApi';
+import type { Order } from '../types/Order';
+import { orderStatusLabel } from '../types/enums';
+import { getCurrentUser, isAdmin } from '../auth/session';
 
 const OrderDetails = () => {
-  // Sample data - replace with actual API call
-  const order = {
-    publicId: '1',
-    orderDate: new Date('2026-02-01T10:30:00'),
-    userName: 'John Doe',
-    status: 'Pending',
-    totalAmount: 1059.97,
-    items: [
-      {
-        itemName: 'Laptop',
-        price: 999.99,
-        quantity: 1,
-      },
-      {
-        itemName: 'Mouse',
-        price: 29.99,
-        quantity: 2,
-      },
-    ],
-  };
+  const { id } = useParams();
+  const user = getCurrentUser();
+  const missingContextError = !id ? 'Missing order id' : !user ? 'Missing user session' : null;
+  const [order, setOrder] = useState<Order | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id || !user) {
+      return;
+    }
+
+    const request = isAdmin(user)
+      ? getAdminOrderDetails(id)
+      : getUserOrderDetails(user.publicId, id);
+
+    request
+      .then(setOrder)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load order details'));
+  }, [id, user]);
+
+  if (missingContextError || error) return <div className="alert alert-danger">{missingContextError ?? error}</div>;
+  if (!order) return <p>Loading order...</p>;
 
   return (
     <div>
@@ -29,13 +37,13 @@ const OrderDetails = () => {
       <div className="card">
         <div className="card-body">
           <p>
-            <strong>Order Date:</strong> {order.orderDate.toLocaleString()}
+            <strong>Order Date:</strong> {new Date(order.orderDate).toLocaleString()}
           </p>
           <p>
             <strong>Customer:</strong> {order.userName}
           </p>
           <p>
-            <strong>Status:</strong> {order.status}
+            <strong>Status:</strong> {orderStatusLabel(order.status)}
           </p>
           <p>
             <strong>Total:</strong> ${order.totalAmount.toFixed(2)}
@@ -52,8 +60,8 @@ const OrderDetails = () => {
               </tr>
             </thead>
             <tbody>
-              {order.items.map((item, index) => (
-                <tr key={index}>
+              {order.items.map((item) => (
+                <tr key={item.publicId}>
                   <td>{item.itemName}</td>
                   <td>${item.price.toFixed(2)}</td>
                   <td>{item.quantity}</td>

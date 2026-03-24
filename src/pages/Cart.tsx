@@ -1,51 +1,107 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { checkout, clearCart, getCart, removeFromCart, updateCartItem } from '../api/cartApi';
+import type { CartSummary } from '../types/Cart';
+import { getCurrentUser } from '../auth/session';
 
 const Cart = () => {
   const navigate = useNavigate();
-  // Sample cart data - replace with actual state management
-  const cartItems = [
-    {
-      itemPublicId: '1',
-      itemName: 'Laptop',
-      itemPrice: 999.99,
-      quantity: 1,
-    },
-    {
-      itemPublicId: '2',
-      itemName: 'Mouse',
-      itemPrice: 29.99,
-      quantity: 2,
-    },
-  ];
+  const user = getCurrentUser();
+  const missingUserError = !user ? 'You must be logged in to access cart.' : null;
+  const [cart, setCart] = useState<CartSummary>({ items: [], total: 0, count: 0 });
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const total = cartItems.reduce(
-    (sum, item) => sum + item.itemPrice * item.quantity,
-    0
-  );
+  const loadCart = async () => {
+    if (!user) {
+      return;
+    }
 
-  const handleUpdateQuantity = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Update quantity');
+    try {
+      const summary = await getCart(user.publicId);
+      setCart(summary);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load cart');
+    }
   };
 
-  const handleRemove = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    getCart(user.publicId)
+      .then(setCart)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load cart'));
+  }, [user]);
+
+  const handleUpdateQuantity = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Remove item');
+    if (!user) return;
+
+    const formData = new FormData(e.currentTarget);
+    const itemPublicId = String(formData.get('ItemPublicId'));
+    const quantity = Number(formData.get('Quantity'));
+
+    try {
+      await updateCartItem(user.publicId, itemPublicId, quantity);
+      await loadCart();
+      setMessage('Cart item updated.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update cart item');
+    }
   };
 
-  const handleCheckout = (e: React.FormEvent) => {
+  const handleRemove = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Checkout');
+    if (!user) return;
+
+    const formData = new FormData(e.currentTarget);
+    const itemPublicId = String(formData.get('itemPublicId'));
+
+    try {
+      await removeFromCart(user.publicId, itemPublicId);
+      await loadCart();
+      setMessage('Item removed from cart.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to remove cart item');
+    }
   };
 
-  const handleClear = (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Clear cart');
+    if (!user) return;
+
+    try {
+      await checkout(user.publicId);
+      await loadCart();
+      setMessage('Checkout completed successfully.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Checkout failed');
+    }
   };
+
+  const handleClear = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    try {
+      await clearCart(user.publicId);
+      await loadCart();
+      setMessage('Cart cleared.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to clear cart');
+    }
+  };
+
+  const cartItems = cart.items;
+  const total = cart.total;
 
   return (
     <div>
       <h1>Shopping Cart</h1>
+      {(missingUserError || error) && <div className="alert alert-danger">{missingUserError ?? error}</div>}
+      {message && <div className="alert alert-success">{message}</div>}
 
       {cartItems.length > 0 ? (
         <>

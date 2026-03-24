@@ -1,18 +1,40 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { deleteUser, getUser } from '../api/usersApi';
+import type { User } from '../types/User';
 
 const DeleteUser = () => {
-  // Sample data - replace with actual API call
-  const user = {
-    publicId: '1',
-    name: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const missingIdError = !id ? 'Missing user id' : null;
+  const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    getUser(id)
+      .then(setUser)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load user'));
+  }, [id]);
+
+  const handleDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    try {
+      await deleteUser(id);
+      navigate('/users');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete user');
+    }
   };
 
-  const handleDelete = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Delete user');
-  };
+  if (missingIdError || error) return <div className="alert alert-danger">{missingIdError ?? error}</div>;
+  if (!user) return <p>Loading user...</p>;
 
   return (
     <div className="container">
