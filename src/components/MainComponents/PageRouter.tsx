@@ -7,7 +7,7 @@ import Categories from '../../pages/Categories'
 import Cart from '../../pages/Cart'
 import Orders from '../../pages/Orders'
 import Favourites from '../../pages/Favourites'
-import Privacy from '../../pages/Privacy'
+import SixSeven from '../../pages/SixSeven'
 import CreateUser from '../../pages/CreateUser'
 import CreateItem from '../../pages/CreateItem'
 import CreateCategory from '../../pages/CreateCategory'
@@ -34,7 +34,7 @@ const PageRouter = () => {
       <Route path="/cart" element={<Cart />} />
       <Route path="/orders" element={<Orders />} />
       <Route path="/favourites" element={<Favourites />} />
-      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/sixseven" element={<SixSeven />} />
       <Route path="/create-user" element={<CreateUser />} />
       <Route path="/items/create" element={<CreateItem />} />
       <Route path="/categories/create" element={<CreateCategory />} />

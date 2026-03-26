@@ -88,7 +88,13 @@ const Users = () => {
                   />
                 </td>
                 <td>
-                  <a onClick={() => navigate(`/user-detail/${user.publicId}`)} className="text-decoration-none" style={{cursor: 'pointer'}}>{user.name}</a>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/user-detail/${user.publicId}`)}
+                    className="btn btn-link p-0 text-decoration-none align-baseline"
+                  >
+                    {user.name}
+                  </button>
                 </td>
                 <td>{user.lastName}</td>
                 <td>{user.email}</td>

@@ -80,7 +80,13 @@ const Favourites = () => {
             {favourites.map((fav) => (
               <tr key={fav.itemPublicId}>
                 <td>
-                  <a onClick={() => navigate(`/items/details/${fav.itemPublicId}`)} className="text-decoration-none" style={{cursor: 'pointer'}}>{fav.itemName}</a>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/items/details/${fav.itemPublicId}`)}
+                    className="btn btn-link p-0 text-decoration-none align-baseline"
+                  >
+                    {fav.itemName}
+                  </button>
                 </td>
                 <td>${fav.itemPrice.toFixed(2)}</td>
                 <td>
